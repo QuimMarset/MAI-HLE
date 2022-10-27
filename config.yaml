@@ -1,0 +1,16 @@
+
+method: 'CNN'
+model: 'CNN'
+batch_size: 32
+seed: 42
+learning_rate: 0.0001
+max_length: 100
+max_distance: 50
+pos_embedding_dim: 5
+conv_filters: 100
+window_size: 3
+dense_units: 200
+dropout: 0.1
+epochs: 50
+patience: 10
+label_smoothing: 0.2

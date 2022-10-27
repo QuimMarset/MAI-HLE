@@ -7,3 +7,7 @@ SemEval*/
 *.zip
 *.png
 *.npy
+glove_embeddings/
+experiments/
+extracted_features/
+embedding_matrices/

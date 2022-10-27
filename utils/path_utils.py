@@ -16,5 +16,10 @@ def get_number_subfolders(path):
 
 def create_new_experiment_folder(path):
     num_experiments = get_number_subfolders(path)
-    experiment_path = create_folder(path, f'experiment_{num_experiments+1}')
+    experiment_path = join_path(path, f'experiment_{num_experiments+1}')
+    create_folder(experiment_path)
     return experiment_path
+
+
+def exists_path(path):
+    return os.path.exists(path)
