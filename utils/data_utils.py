@@ -32,7 +32,8 @@ def get_features(set_name, method_name, data, word_to_index, max_sentence_length
 
 
 def get_train_features(method_name, train_data, word_to_index, max_sentence_length, features_path, max_distance):
-    return get_features('train', method_name, train_data, word_to_index, max_sentence_length, features_path, max_distance)
+    train_features = get_features('train', method_name, train_data, word_to_index, max_sentence_length, features_path, max_distance)
+    return np.array(train_features)
 
 
 def get_test_features(method_name, test_data, word_to_index, max_sentence_length, features_path, max_distance):

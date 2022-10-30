@@ -70,7 +70,8 @@ class CNNModel(BasicModel):
 
         dropout_out_2 = keras.layers.Dropout(dropout_value)(all_features)
 
-        classif = keras.layers.Dense(self.num_classes, activation='softmax')(dropout_out_2)
+        classif = keras.layers.Dense(self.num_classes, activation='softmax',
+            kernel_regularizer=keras.regularizers.L2(0.01))(dropout_out_2)
 
         self.model = keras.Model(input, classif)
        

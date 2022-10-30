@@ -5,7 +5,7 @@ from constants_paths import *
 from utils.data_utils import get_test_features, labels_to_one_hot
 from utils.path_utils import *
 from utils.plot_utils import plot_confusion_matrix
-from utils.file_io_utils import load_json_to_dict, load_npy_file_to_np_array
+from utils.file_io_utils import load_json_to_dict, load_npy_file_to_np_array, read_data_file
 from data_generator import DataGenerator
 from models import cnn_model
 
@@ -41,7 +41,7 @@ def test(model_name, experiment_path, test_gen, index_to_relation):
 
 if __name__ == '__main__':
     
-    experiment_path = join_path(experiments_path, 'experiment_19')
+    experiment_path = join_path(experiments_path, 'experiment_2')
 
     config = load_json_to_dict(join_path(experiment_path, 'hyperparameters.json'))
     config = SimpleNamespace(**config)
@@ -51,6 +51,7 @@ if __name__ == '__main__':
     word_to_index = load_json_to_dict(word_to_index_path)
     
     test_data = load_json_to_dict(test_data_path)
+    test_data = read_data_file(join_path('data', 'test.cln'))
     
     test_features = get_test_features(config.method, test_data, word_to_index, config.max_length, extracted_features_path, config.max_distance)
     

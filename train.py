@@ -53,20 +53,27 @@ if __name__ == '__main__':
 
     experiment_path = create_new_experiment_folder(experiments_path)
 
+    train_data = load_json_to_dict(train_data_path)
+    test_data = load_json_to_dict(test_data_path)
+
     train_labels = load_npy_file_to_np_array(train_labels_path)
+    test_labels = load_npy_file_to_np_array(test_labels_path)
+
     class_to_index = load_json_to_dict(class_to_index_path)
     words_to_index = load_json_to_dict(word_to_index_path)
-    train_data = load_json_to_dict(train_data_path)
-    word_embedding_matrix = load_npy_file_to_np_array(glove_100_matrix_path)
+    word_embedding_matrix = load_npy_file_to_np_array(senna_50_matrix_path)
 
     num_classes = len(class_to_index)
-    
+
     train_features = get_train_features(config.method, train_data, words_to_index, config.max_length, extracted_features_path, config.max_distance)
+    test_features = get_test_features(config.method, test_data, words_to_index, config.max_length, extracted_features_path, config.max_distance)
+
     train_labels = labels_to_one_hot(train_labels, class_to_index)
-    train_features, val_features, train_labels, val_labels = create_train_val_split(train_features, train_labels, 0.1, config.seed)
+    test_labels = labels_to_one_hot(test_labels, class_to_index)
+    #train_features, val_features, train_labels, val_labels = create_train_val_split(train_features, train_labels, 0.1, config.seed)
 
     train_gen = TrainDataGenerator(config.batch_size, train_features, train_labels, config.seed)
-    val_gen = DataGenerator(config.batch_size, val_features, val_labels)
+    val_gen = DataGenerator(config.batch_size, test_features, test_labels)
 
     input_shape = train_features.shape[1]
 
