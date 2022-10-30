@@ -21,9 +21,9 @@ def create_train_val_split(train_features, train_labels, percentage, seed):
     return np.array(train_features), np.array(val_features), np.array(train_labels), np.array(val_labels)
 
 
-def get_features(set_name, method_name, data, word_to_index, max_sentence_length, features_path):
+def get_features(set_name, method_name, data, word_to_index, max_sentence_length, features_path, max_distance):
     if method_name == 'CNN':
-        feature_extractor = CNNFeatureExtractor(set_name, data, word_to_index, max_sentence_length, features_path)
+        feature_extractor = CNNFeatureExtractor(set_name, data, word_to_index, max_sentence_length, features_path, max_distance)
     else:
         raise NotImplementedError(method_name)
 
@@ -31,10 +31,10 @@ def get_features(set_name, method_name, data, word_to_index, max_sentence_length
     return features
 
 
-def get_train_features(method_name, train_data, word_to_index, max_sentence_length, features_path):
-    return get_features('train', method_name, train_data, word_to_index, max_sentence_length, features_path)
+def get_train_features(method_name, train_data, word_to_index, max_sentence_length, features_path, max_distance):
+    return get_features('train', method_name, train_data, word_to_index, max_sentence_length, features_path, max_distance)
 
 
-def get_test_features(method_name, test_data, word_to_index, max_sentence_length, features_path):
-    test_features = get_features('test', method_name, test_data, word_to_index, max_sentence_length, features_path)
+def get_test_features(method_name, test_data, word_to_index, max_sentence_length, features_path, max_distance):
+    test_features = get_features('test', method_name, test_data, word_to_index, max_sentence_length, features_path, max_distance)
     return np.array(test_features)

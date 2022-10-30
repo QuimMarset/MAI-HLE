@@ -6,17 +6,17 @@ from utils.embedding_utils import preprocess_sentence_for_embedding
 
 class CNNFeatureExtractor(object):
 
-    def __init__(self, split_name, data, words_to_index, max_length, features_path, max_distance=50):
+    def __init__(self, split_name, data, words_to_index, max_length, features_path, max_distance):
         self.split_name = split_name
         self.max_distance = max_distance
         self.features = []
-        file_name = f'{self.split_name}_cnn_features'
+        self.file_path = join_path(features_path, f'{self.split_name}_cnn_features.npy')
 
-        if exists_path(join_path(features_path, file_name)):
-            self.features = load_npy_file_to_np_array(join_path(features_path, file_name))
+        if exists_path(self.file_path):
+            self.features = load_npy_file_to_np_array(self.file_path)
         else:
             self.__compute_samples_features(data, words_to_index, max_length)
-            save_array_to_npy_file(self.features, features_path, file_name)
+            save_array_to_npy_file(self.features, self.file_path)
             
 
     def get_features(self):

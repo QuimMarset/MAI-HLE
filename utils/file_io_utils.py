@@ -7,12 +7,11 @@ from types import SimpleNamespace
 
 
 def read_data_file(file_path):
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf8') as file:
         return file.readlines()
 
 
-def save_array_to_npy_file(array, save_path, file_name):
-    file_path = join_path(save_path, f'{file_name}.npy')
+def save_array_to_npy_file(array, file_path):
     with open(file_path, 'wb') as file:
         np.save(file, array)
 
@@ -27,8 +26,7 @@ def write_json_string(json_string, file_path):
         json.dump(json.loads(json_string), file, indent=4)
 
 
-def write_dict_to_json(dict, save_path, file_name, indent=4):
-    file_path = join_path(save_path, f'{file_name}.json')
+def write_dict_to_json(dict, file_path, indent=4):
     with open(file_path, 'w') as file:
         json.dump(dict, file, indent=indent)
 

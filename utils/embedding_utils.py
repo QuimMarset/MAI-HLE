@@ -1,51 +1,56 @@
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
+from utils.file_io_utils import read_data_file, load_npy_file_to_np_array
 
 
 
-def create_text_vectorizer(train_data, max_sentence_length, max_tokens):
+def create_word_to_index(train_data, max_sentence_length, max_tokens):
     vectorizer = keras.layers.TextVectorization(max_tokens, output_sequence_length=max_sentence_length)
     text_ds = tf.data.Dataset.from_tensor_slices(train_data).batch(128)
     vectorizer.adapt(text_ds)
-    return vectorizer
+    vocabulary = vectorizer.get_vocabulary()
+    word_to_index = dict(zip(vocabulary, range(len(vocabulary))))
+    return word_to_index
 
 
-def create_pre_trained_embedding_dict(pre_trained_embed_file_path):
-    embedding_dict = {}
-    with open(pre_trained_embed_file_path, 'r', encoding='utf8') as file:
-        for line in file:
-            word, coefs = line.strip().split(maxsplit=1)
-            coefs = np.fromstring(coefs, dtype=float, sep=' ')
-            embedding_dict[word] = coefs
-    return embedding_dict
+def create_word_to_vector(embedding_path):
+    word_to_vector = {}
+    file_lines = read_data_file(embedding_path)
+    for line in file_lines:
+        word, vector = line.strip().split(maxsplit=1)
+        vector = np.fromstring(vector, dtype=float, sep=' ')
+        word_to_vector[word] = vector
+    return word_to_vector, len(vector)
 
 
-def compute_oov_embedding(word_embeddings):
-    embedding_vectors = word_embeddings.values()
-    return np.mean(embedding_vectors, axis=0)
+def create_word_to_vector_separate_files(vocabulary_path, vectors_npy_path):
+    vocabulary = []
+    file_lines = read_data_file(vocabulary_path)
+    for line in file_lines:
+        vocabulary.append(line.strip())
+    vectors = load_npy_file_to_np_array(vectors_npy_path)
+    word_to_vector = dict(zip(vocabulary, vectors))
+    return word_to_vector, len(vectors[0])
 
 
-def create_embedding_matrix(pre_trained_embed_file_path, train_vocabulary, embedding_dim):
-    embedding_dict = create_pre_trained_embedding_dict(pre_trained_embed_file_path)
+def create_embedding_matrix(word_to_vector, train_vocabulary, embedding_dim):
     num_tokens = len(train_vocabulary) + 2
     embedding_matrix = np.zeros((num_tokens, embedding_dim))
     hits = 0
     misses = 0
     
     for i, word in enumerate(train_vocabulary):
-        embedding_vector = embedding_dict.get(word)
+        embedding_vector = word_to_vector.get(word)
         if embedding_vector is not None:
-            # padding and oov token
             embedding_matrix[i] = embedding_vector
             hits += 1
-        else:
+        elif i > 2:
+            # i = 0 is pad token and i = 2 is unknown token
+            embedding_matrix[i] = np.random.normal(0, 0.1, embedding_dim)
             misses += 1
     
     print("Converted %d words (%d misses)" % (hits, misses))
-
-    # Out of vocabulary token
-    #embedding_matrix[1] = compute_oov_embedding(embedding_dict)
     return embedding_matrix
 
 

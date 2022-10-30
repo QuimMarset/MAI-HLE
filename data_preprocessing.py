@@ -90,14 +90,14 @@ def preprocess_file(file_path):
 def preprocess_train_data(train_file_path, save_path):
     train_data, train_labels = preprocess_file(train_file_path)
     class_to_index = create_class_to_index_dict(train_labels)
-    write_dict_to_json(train_data, save_path, 'processed_train_data')
+    write_dict_to_json(train_data, save_path, 'train_data')
     save_array_to_npy_file(train_labels, save_path, 'train_labels')
     write_dict_to_json(class_to_index, save_path, 'class_to_index')
 
 
 def preprocess_test_data(test_file_path, save_path):
     test_data, test_labels = preprocess_file(test_file_path)
-    write_dict_to_json(test_data, save_path, 'processed_test_data')
+    write_dict_to_json(test_data, save_path, 'test_data')
     save_array_to_npy_file(test_labels, save_path, 'test_labels')
 
 

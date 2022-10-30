@@ -6,14 +6,14 @@ from utils.plot_utils import *
 from utils.data_utils import *
 from constants_paths import *
 from models.cnn_model import CNNModel
-from data_generator import DataGenerator
+from data_generator import DataGenerator, TrainDataGenerator
 
 
 
 def create_model(input_shape, num_classes, word_embedding_matrix, config):
     if config.model == 'CNN':
         return CNNModel(input_shape, num_classes, word_embedding_matrix, config.pos_embedding_dim, config.max_distance, 
-            config.max_length, config.window_size, config.conv_filters, config.dense_units, config.dropout, config.seed)
+            config.conv_filters, config.dropout, True, config.max_length, config.seed)
     else:
         raise NotImplementedError(config.model)
 
@@ -37,10 +37,10 @@ def train(input_shape, train_gen, val_gen, config, num_classes, word_embed_matri
     
     # Save training metrics and experiment hyperparameters
     training_metrics = history.history
-    write_dict_to_json(training_metrics, experiment_path, 'train_metrics')
+    write_dict_to_json(training_metrics, join_path(experiment_path, 'train_metrics.json'))
     
     hyperparameters = vars(config)
-    write_dict_to_json(hyperparameters, experiment_path, 'hyperparameters')
+    write_dict_to_json(hyperparameters, join_path(experiment_path, 'hyperparameters.json'))
 
     plot_learning_curves(training_metrics['loss'], training_metrics['val_loss'], 
         training_metrics['accuracy'], training_metrics['val_accuracy'], experiment_path)
@@ -51,24 +51,22 @@ if __name__ == '__main__':
 
     config = read_yaml_config('config.yaml')
 
-    create_folder(features_path)
-    create_folder(experiments_path)
     experiment_path = create_new_experiment_folder(experiments_path)
 
     train_labels = load_npy_file_to_np_array(train_labels_path)
     class_to_index = load_json_to_dict(class_to_index_path)
     words_to_index = load_json_to_dict(word_to_index_path)
     train_data = load_json_to_dict(train_data_path)
-    word_embedding_matrix = load_npy_file_to_np_array(embedding_matrix_path)
+    word_embedding_matrix = load_npy_file_to_np_array(glove_100_matrix_path)
 
     num_classes = len(class_to_index)
     
-    train_features = get_train_features(config.method, train_data, words_to_index, config.max_length, features_path)
+    train_features = get_train_features(config.method, train_data, words_to_index, config.max_length, extracted_features_path, config.max_distance)
     train_labels = labels_to_one_hot(train_labels, class_to_index)
     train_features, val_features, train_labels, val_labels = create_train_val_split(train_features, train_labels, 0.1, config.seed)
 
-    train_gen = DataGenerator(config.batch_size, train_features, train_labels, config.seed)
-    val_gen = DataGenerator(config.batch_size, val_features, val_labels, config.seed)
+    train_gen = TrainDataGenerator(config.batch_size, train_features, train_labels, config.seed)
+    val_gen = DataGenerator(config.batch_size, val_features, val_labels)
 
     input_shape = train_features.shape[1]
 

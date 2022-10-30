@@ -12,14 +12,21 @@ from models import cnn_model
 
 
 def create_model(model_name, experiment_path):
-    
     if model_name == 'CNN':
         return cnn_model.CNNModel.create_test_model(experiment_path)
     else:
         raise NotImplementedError(model_name)
 
 
-def test(model_name, experiment_path, test_gen, classes_name):
+def save_predictions(predictions, experiment_path, index_to_relation):
+    file_path = join_path(experiment_path, 'test_predictions.txt')
+    start_index = 8001
+    with open(file_path, 'w') as file:
+        for i, prediction in enumerate(predictions):
+            file.write(f'{start_index+i}\t{index_to_relation[prediction]}\n')
+
+
+def test(model_name, experiment_path, test_gen, index_to_relation):
     model = create_model(model_name, experiment_path)
 
     true_labels = np.argmax(test_gen.labels, axis=1)
@@ -28,31 +35,28 @@ def test(model_name, experiment_path, test_gen, classes_name):
     
     accuracy = accuracy_score(true_labels, predictions)
     print(f'\nTest accuracy: {accuracy:.2f}\n')
-    print(classification_report(true_labels, predictions, target_names=classes_name))
-    
-    confusion_matrix_ = confusion_matrix(true_labels, predictions)
-    plot_confusion_matrix(confusion_matrix_, classes_names, experiment_path)
+    save_predictions(predictions, experiment_path, index_to_relation)
 
 
 
 if __name__ == '__main__':
     
-    experiment_path = join_path(experiments_path, 'experiment_1')
+    experiment_path = join_path(experiments_path, 'experiment_19')
 
     config = load_json_to_dict(join_path(experiment_path, 'hyperparameters.json'))
     config = SimpleNamespace(**config)
 
     class_to_index = load_json_to_dict(class_to_index_path)
-    classes_names = list(class_to_index.keys())
+    index_to_class = dict(zip(range(len(class_to_index)), list(class_to_index.keys())))
     word_to_index = load_json_to_dict(word_to_index_path)
     
     test_data = load_json_to_dict(test_data_path)
     
-    test_features = get_test_features(config.method, test_data, word_to_index, config.max_length, features_path)
+    test_features = get_test_features(config.method, test_data, word_to_index, config.max_length, extracted_features_path, config.max_distance)
     
     test_labels = load_npy_file_to_np_array(test_labels_path)
     test_labels = labels_to_one_hot(test_labels, class_to_index)
     
-    test_gen = DataGenerator(config.batch_size, test_features, test_labels, config.seed)
+    test_gen = DataGenerator(config.batch_size, test_features, test_labels)
     
-    test(config.model, experiment_path, test_gen, classes_names)
+    test(config.model, experiment_path, test_gen, index_to_class)
