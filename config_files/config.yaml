@@ -12,4 +12,4 @@ dense_units: 200
 dropout: 0.3
 epochs: 400
 patience: 30
-label_smoothing: 0.2
+label_smoothing: 0

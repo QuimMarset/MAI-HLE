@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
+import numpy as np
 from contextlib import redirect_stdout
 from utils.file_io_utils import load_json_to_dict, load_json_to_string, write_json_string
 from utils.path_utils import join_path
@@ -19,31 +20,56 @@ class BasicModel:
     @classmethod
     def create_test_model(cls, model_path):
         instance = super().__new__(cls)
-        instance.load_architecture(model_path)
-        instance.load_weights(model_path)
+        instance.__load_architecture(model_path)
+        instance.__load_weights(model_path)
         return instance
 
 
-    def save_summary(self, save_path):
+    def compile(self, optimizer, label_smoothing):
+        loss_function = keras.losses.CategoricalCrossentropy(label_smoothing=label_smoothing)
+        self.model.compile(optimizer, run_eagerly=True, loss=loss_function, metrics=["accuracy"])
+
+
+    def fit(self, train_gen, epochs, val_gen, patience):
+        early_stopping = keras.callbacks.EarlyStopping(monitor="val_loss", patience=patience, 
+            restore_best_weights=True, min_delta=1e-5)
+
+        history = self.model.fit(train_gen, epochs=epochs, validation_data=val_gen, 
+            workers=6, callbacks=[early_stopping], shuffle=False)
+        return history
+
+    
+    def predict(self, test_gen):
+        predictions = self.model.predict(test_gen)
+        return np.argmax(predictions, axis=-1)
+
+
+    def save_model(self, save_path):
+        self.__save_summary(save_path)
+        self.__save_architecture(save_path)
+        self.__save_weights(save_path)
+
+
+    def __save_summary(self, save_path):
         file_path = join_path(save_path, 'model_summary.txt')
         with open(file_path, 'w') as file:
             with redirect_stdout(file):
                 self.model.summary(expand_nested=True)
 
 
-    def load_architecture(self, load_path):
+    def __load_architecture(self, load_path):
         architecture = load_json_to_string(join_path(load_path, 'model_architecture.json'))
         self.model =  keras.models.model_from_json(architecture)
         
     
-    def save_architecture(self, save_path):
+    def __save_architecture(self, save_path):
         model_json_string = self.model.to_json()
         write_json_string(model_json_string, join_path(save_path, 'model_architecture.json'))
 
 
-    def load_weights(self, load_path):
+    def __load_weights(self, load_path):
         self.model.load_weights(join_path(load_path, 'model_weights')).expect_partial()
 
 
-    def save_weights(self, save_path):
+    def __save_weights(self, save_path):
         self.model.save_weights(join_path(save_path, 'model_weights'))

@@ -1,0 +1,15 @@
+
+pre_trained_name: 'glove_300'
+max_length: 100
+lstm_units: 100
+dropout_embed: 0.5
+dropout_lstm: 0.5
+dropout_attention: 0.5
+seed: 1234
+epochs: 200
+label_smoothing: 0.1
+batch_size: 100
+patience: 100
+learning_rate: 1.0
+optimizer: 'adadelta'
+l2_coef: 0.00001

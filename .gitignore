@@ -10,4 +10,5 @@ SemEval*/
 glove_embeddings/
 experiments/
 extracted_features/
-embedding_matrices/
+embedding_matrices
+corenlp/

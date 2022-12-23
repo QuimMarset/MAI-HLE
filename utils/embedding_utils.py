@@ -1,17 +1,16 @@
 import tensorflow as tf
-from tensorflow import keras
+from keras.layers import TextVectorization
 import numpy as np
 from utils.file_io_utils import read_data_file, load_npy_file_to_np_array
 
 
 
-def create_word_to_index(train_data, max_sentence_length, max_tokens):
-    vectorizer = keras.layers.TextVectorization(max_tokens, output_sequence_length=max_sentence_length)
+def create_feature_to_index(train_data, max_tokens):
+    vectorizer = TextVectorization(max_tokens)
     text_ds = tf.data.Dataset.from_tensor_slices(train_data).batch(128)
     vectorizer.adapt(text_ds)
     vocabulary = vectorizer.get_vocabulary()
-    word_to_index = dict(zip(vocabulary, range(len(vocabulary))))
-    return word_to_index
+    return dict(zip(vocabulary, range(len(vocabulary))))
 
 
 def create_word_to_vector(embedding_path):
@@ -39,37 +38,32 @@ def create_embedding_matrix(word_to_vector, train_vocabulary, embedding_dim):
     embedding_matrix = np.zeros((num_tokens, embedding_dim))
     hits = 0
     misses = 0
+
+    values = list(word_to_vector.values())
+    mean = np.mean(values)
+    std = np.std(values)
     
     for i, word in enumerate(train_vocabulary):
         embedding_vector = word_to_vector.get(word)
         if embedding_vector is not None:
             embedding_matrix[i] = embedding_vector
             hits += 1
-        elif i > 2:
-            # i = 0 is pad token and i = 2 is unknown token
-            embedding_matrix[i] = np.random.normal(0, 0.1, embedding_dim)
+        elif i > 0:
+            # i = 0 is pad token and i = 1 is unknown token
+            embedding_matrix[i] = np.random.normal(mean, std, embedding_dim)
             misses += 1
     
     print("Converted %d words (%d misses)" % (hits, misses))
     return embedding_matrix
 
 
-def get_word_index(word, word_to_index):
-    if word in word_to_index:
-        return word_to_index[word]
-    elif word.lower() in word_to_index:
-        return word_to_index[word.lower()]
-    return word_to_index['[UNK]']
+def create_vectorizer(feature_to_index, max_length=None):
+    vectorizer = TextVectorization(output_sequence_length=max_length)
+    vectorizer.set_vocabulary(list(feature_to_index.keys()))
+    return vectorizer
 
 
-def preprocess_sentence_for_embedding(sentence_words, word_to_index, max_length):
-    sentence_indices = [get_word_index(word, word_to_index) for word in sentence_words]
-    num_words = len(sentence_words)
-    padding_index = word_to_index['']
-
-    if num_words > max_length:
-        sentence_indices = sentence_indices[:max_length]
-    else:
-        sentence_indices.extend([padding_index] * (max_length - num_words))
-
-    return sentence_indices
+def map_to_indices(vectorizer, sentence_words):
+    sentence = ' '.join(sentence_words)
+    indices = vectorizer([sentence]).numpy()[0]
+    return indices

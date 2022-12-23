@@ -6,24 +6,24 @@ from utils.path_utils import join_path
 
 
 
-def plot_learning_curves(train_loss, val_loss, train_acc, val_acc, save_path):
+def plot_learning_curves(metrics_dict, save_path):
     sns.set(style="whitegrid")
     _, ax = plt.subplots(figsize=(12, 6))
 
-    ax.plot(train_loss, 'g-.', label='Train loss')
-    ax.plot(val_loss, 'r-.', label='Val loss')
+    ax.plot(metrics_dict['loss'], 'g-.', label='Train loss')
+    ax.plot(metrics_dict['val_loss'], 'r-.', label='Test loss')
     ax.set_ylabel('Loss')
     
     ax_2 = ax.twinx()
-    ax_2.plot(train_acc, 'c', label='Train accuracy')
-    ax_2.plot(val_acc, color='orange', label='Val accuracy')
+    ax_2.plot(metrics_dict['accuracy'], 'c', label='Train accuracy')
+    ax_2.plot(metrics_dict['val_accuracy'], color='orange', label='Test accuracy')
     ax_2.set_ylabel('Accuracy')
 
     ax.set_xlabel('Epoch')
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax_2.get_legend_handles_labels()
     ax.legend(h1+h2, l1+l2, bbox_to_anchor=(1.08, 0.5), loc="center left", fontsize=9)
-    plt.title(f'Training and validation learning curves')
+    plt.title(f'Training and testing learning curves')
     plt.tight_layout()
     plt.savefig(join_path(save_path, 'learning_curves.png'), dpi=100)
     plt.close()
@@ -44,7 +44,7 @@ def plot_classes_histogram(labels, class_names, class_index_dict, save_path, par
     frequencies = compute_class_frequencies(labels, class_index_dict, num_classes)
     
     plt.figure(figsize=(8, 6))
-    plt.bar(range(num_classes), frequencies, label='Class proportion')
+    plt.bar(range(num_classes), frequencies, label='Class proportion', log=True)
     plt.xticks([i for i in range(num_classes)], class_names, rotation='vertical')
     plt.legend()
     plt.title(f'Classes proportion in the {partition} dataset')

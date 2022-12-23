@@ -22,17 +22,17 @@ def load_npy_file_to_np_array(file_path):
 
 
 def write_json_string(json_string, file_path):
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w', encoding='utf8') as file:
         json.dump(json.loads(json_string), file, indent=4)
 
 
 def write_dict_to_json(dict, file_path, indent=4):
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w', encoding='utf8') as file:
         json.dump(dict, file, indent=indent)
 
 
 def load_json_to_dict(file_path):
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', encoding='utf8') as file:
         dict = json.load(file)
     return dict
 

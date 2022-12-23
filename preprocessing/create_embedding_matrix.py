@@ -1,4 +1,6 @@
-from constants_paths import *
+import sys
+sys.path.append('./')
+from utils.constants_paths import *
 from utils.file_io_utils import load_json_to_dict, save_array_to_npy_file, write_dict_to_json
 from utils.embedding_utils import *
 
@@ -19,16 +21,8 @@ def create_senna_embedding_matrix(train_vocabulary):
 
 
 if __name__ == '__main__':
-       
-    max_sentence_length = 100
-    max_tokens = 20000
-    
-    train_data = load_json_to_dict(train_data_path)
-    train_sentence_words = [' '.join(sentence_data['words']) for sentence_data in train_data.values()]
 
-    word_to_index = create_word_to_index(train_sentence_words, max_sentence_length, max_tokens)
-    write_dict_to_json(word_to_index, word_to_index_path)
-
+    word_to_index = load_json_to_dict(word_to_index_path)
     train_vocabulary = list(word_to_index.keys())
     create_glove_embedding_matrices(train_vocabulary)
     create_senna_embedding_matrix(train_vocabulary)

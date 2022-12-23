@@ -8,8 +8,8 @@ data_path = 'data'
 # =====================
 
 raw_data_path = join_path(data_path, 'raw_data')
-raw_train_data_path = join_path(data_path, 'TRAIN_FILE.txt')
-raw_test_data_path = join_path(data_path, 'TEST_FILE_FULL.txt')
+raw_train_data_path = join_path(raw_data_path, 'TRAIN_FILE.txt')
+raw_test_data_path = join_path(raw_data_path, 'TEST_FILE_FULL.txt')
 
 # =====================
 # Processed data
@@ -24,12 +24,20 @@ test_labels_path = join_path(processed_data_path, 'test_labels.npy')
 class_to_index_path = join_path(processed_data_path, 'class_to_index.json')
 
 # =====================
+# Vocabularies
+# =====================
+
+vocabularies_path = join_path(data_path, 'vocabularies')
+word_to_index_path = join_path(vocabularies_path, 'word_to_index.json')
+pos_tag_to_index_path = join_path(vocabularies_path, 'pos_tag_to_index.json')
+lemma_to_index_path = join_path(vocabularies_path, 'lemma_to_index.json')
+relation_to_index_path = join_path(vocabularies_path, 'relation_to_index.json')
+
+# =====================
 # Word embeddings
 # =====================
 
 embeddings_path = join_path(data_path, 'embeddings')
-
-word_to_index_path = join_path(embeddings_path, 'word_to_index.json')
 
 glove_path = join_path(embeddings_path, 'glove')
 glove_50_path = join_path(glove_path, 'glove.6B.50d.txt')
@@ -50,6 +58,17 @@ senna_50_matrix_path = join_path(embedding_matrices_path, 'embedding_matrix_senn
 
 glove_embeddings = [glove_50_path, glove_100_path, glove_200_path, glove_300_path]
 glove_matrices = [glove_50_matrix_path, glove_100_matrix_path, glove_200_matrix_path, glove_300_matrix_path]
+
+# =====================
+# Extracted features
+# =====================
+
+configs_path = 'config_files'
+cnn_config_path = join_path(configs_path, 'cnn_config.yaml')
+cnn_rnn_config_path = join_path(configs_path, 'cnn_rnn_config.yaml')
+drnn_config_path = join_path(configs_path, 'drnn_config.yaml')
+attention_bi_lstm_config_path = join_path(configs_path, 'config_attention_bi_lstm.yaml')
+
 
 # =====================
 # Extracted features

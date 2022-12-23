@@ -1,0 +1,15 @@
+
+
+pre_trained_name: 'glove_100'
+fine_tune_words: False
+max_length: 100
+embed_dim: 50
+dense_units: 100
+dropout_embed: 0.5
+dropout_dense: 0.3
+l2_coef: 0.001
+batch_size: 32
+epochs: 50
+patience: 10
+label_smoothing: 0.1
+seed: 1234

@@ -33,12 +33,11 @@ class CNNFeatureExtractor(object):
 
     def __compute_sample_features(self, sentence_data, words_to_index, max_length):
         words = sentence_data['words']
-        e1_start = sentence_data['e1_start'] 
-        e1_end = sentence_data['e1_end'] 
-        e2_start = sentence_data['e2_start'] 
-        e2_end = sentence_data['e2_end'] 
+        lc_forms = [word['lc_form'] for word in words]
+        e1_start, e1_end = sentence_data['e1_span'] 
+        e2_start, e2_end = sentence_data['e2_span']
 
-        words_idx = preprocess_sentence_for_embedding(words, words_to_index, max_length)
+        words_idx = preprocess_sentence_for_embedding(lc_forms, words_to_index, max_length)
 
         lexical_features = self.__compute_lexical_features(words_idx, e1_start, e1_end, e2_start, e2_end)
         e1_positions, e2_positions = self.__compute_position_features(len(words_idx), e1_start, e1_end, e2_start, e2_end)
