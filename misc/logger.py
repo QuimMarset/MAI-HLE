@@ -41,8 +41,8 @@ class Logger:
         if f1_score > self.best_f1:
             self.best_f1 = f1_score
 
-        f1_log = f'Official macro-averaged F1-score (9+1)-Way considering directionality: Current {f1_score} '
-        f1_log += f'Best {self.best_f1}'
+        f1_log = f'Official macro-averaged F1-score (9+1)-Way considering directionality: Current {f1_score:.4f} '
+        f1_log += f'Best {self.best_f1:.4f}'
         self.log_file.write(f1_log + '\n')
         print(f1_log)
 

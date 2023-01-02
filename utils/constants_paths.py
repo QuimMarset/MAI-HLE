@@ -14,6 +14,8 @@ true_test_predictions_path = join_path(raw_data_path, 'TEST_FILE_KEY.txt')
 
 perl_scorer_path = 'scorer.pl'
 
+bert_path = join_path(data_path, 'bert')
+
 # =====================
 # Processed data
 # =====================
@@ -25,22 +27,13 @@ test_data_path = join_path(processed_data_path, 'processed_test_data.json')
 train_labels_path = join_path(processed_data_path, 'train_labels.npy')
 test_labels_path = join_path(processed_data_path, 'test_labels.npy')
 
-train_data_2_path = join_path(processed_data_path, 'processed_train_data_2.json')
-test_data_2_path = join_path(processed_data_path, 'processed_test_data_2.json')
-train_labels_2_path = join_path(processed_data_path, 'train_labels_2.npy')
-test_labels_2_path = join_path(processed_data_path, 'test_labels_2.npy')
-
 
 # =====================
 # Vocabularies
 # =====================
 
 vocabularies_path = join_path(data_path, 'vocabularies')
-word_to_index_path = join_path(vocabularies_path, 'word_to_index.json')
-pos_tag_to_index_path = join_path(vocabularies_path, 'pos_tag_to_index.json')
-lemma_to_index_path = join_path(vocabularies_path, 'lemma_to_index.json')
-relation_to_index_path = join_path(vocabularies_path, 'relation_to_index.json')
-relative_position_to_index_path = join_path(vocabularies_path, 'rel_position_to_index.json')
+words_vocabulary_path = join_path(vocabularies_path, 'words_vocabulary')
 
 # =====================
 # Word embeddings
@@ -75,20 +68,15 @@ glove_matrices = [glove_50_matrix_path, glove_100_matrix_path, glove_200_matrix_
 # =====================
 
 configs_path = 'config_files'
+
 cnn_config_path = join_path(configs_path, 'cnn_config.yaml')
 cnn_rnn_config_path = join_path(configs_path, 'cnn_rnn_config.yaml')
 drnn_config_path = join_path(configs_path, 'drnn_config.yaml')
 attention_bi_lstm_config_path = join_path(configs_path, 'config_attention_bi_lstm.yaml')
 entity_attention_lstm_config_path = join_path(configs_path, 'entity_attention_lstm_config.yaml')
 
+rbert_config_path = join_path(configs_path, 'RBERT_config.yaml')
 
-# =====================
-# Extracted features
-# =====================
-
-extracted_features_path = join_path(data_path, 'extracted_features')
-cnn_train_features_path = join_path(extracted_features_path, 'train_cnn_features.npy')
-cnn_test_features_path = join_path(extracted_features_path, 'test_cnn_features.npy')
 
 # =====================
 # Experiment results

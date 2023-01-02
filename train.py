@@ -3,7 +3,7 @@ from utils.file_io_utils import *
 from utils.path_utils import create_new_experiment_folder
 from utils.builders import *
 from utils.label_dicts import class2label
-from misc.perl_scorer_2 import OfficialF1Scorer
+from misc.perl_scorer import OfficialF1Scorer
 from misc.logger import Logger
 
 
