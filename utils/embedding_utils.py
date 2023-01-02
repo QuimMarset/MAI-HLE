@@ -35,22 +35,20 @@ def create_word_to_vector_separate_files(vocabulary_path, vectors_npy_path):
 
 def create_embedding_matrix(word_to_vector, train_vocabulary, embedding_dim):
     num_tokens = len(train_vocabulary) + 2
-    embedding_matrix = np.zeros((num_tokens, embedding_dim))
+    embedding_matrix = np.random.randn(len(train_vocabulary), embedding_dim).astype(np.float32) * np.sqrt(2.0 / len(train_vocabulary))
+    #embedding_matrix = np.zeros((num_tokens, embedding_dim))
     hits = 0
     misses = 0
 
     values = list(word_to_vector.values())
-    mean = np.mean(values)
-    std = np.std(values)
     
     for i, word in enumerate(train_vocabulary):
         embedding_vector = word_to_vector.get(word)
-        if embedding_vector is not None:
+        if embedding_vector is not None and len(embedding_vector) > 0:
             embedding_matrix[i] = embedding_vector
             hits += 1
         elif i > 0:
             # i = 0 is pad token and i = 1 is unknown token
-            embedding_matrix[i] = np.random.normal(mean, std, embedding_dim)
             misses += 1
     
     print("Converted %d words (%d misses)" % (hits, misses))

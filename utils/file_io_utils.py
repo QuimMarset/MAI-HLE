@@ -1,14 +1,16 @@
 import numpy as np
 import json
 import yaml
-from utils.path_utils import join_path
 from types import SimpleNamespace
 
 
 
 def read_data_file(file_path):
+    lines = []
     with open(file_path, 'r', encoding='utf8') as file:
-        return file.readlines()
+        for line in file.readlines():
+            lines.append(line.strip())
+    return lines
 
 
 def save_array_to_npy_file(array, file_path):

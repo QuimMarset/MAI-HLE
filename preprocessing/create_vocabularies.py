@@ -35,6 +35,12 @@ def create_relation_to_index(train_data, max_tokens, save_path):
     write_dict_to_json(relation_to_index, save_path)
 
 
+def create_relative_position_vocabulary(train_pos_e1, train_pos_e2, test_pos_e1, test_pos_e2, max_sentence_length, save_path):
+    relative_positions = train_pos_e1 + train_pos_e2 + test_pos_e1 + test_pos_e2
+    pos_to_index = create_feature_to_index(relative_positions, 2*max_sentence_length)
+    write_dict_to_json(pos_to_index, save_path)
+
+
 
 if __name__ == '__main__':
     
@@ -47,3 +53,15 @@ if __name__ == '__main__':
     create_pos_tag_to_index(train_data, max_tokens, pos_tag_to_index_path)
     #create_lemma_to_index(train_data, max_tokens, lemma_to_index_path)
     create_relation_to_index(train_data, max_tokens, relation_to_index_path)
+
+    train_data = load_json_to_dict(train_data_2_path)
+    test_data = load_json_to_dict(test_data_2_path)
+
+    train_pos_e1 = [train_data[index]['pos_e1'].strip() for index in train_data]
+    train_pos_e2 = [train_data[index]['pos_e2'].strip() for index in train_data]
+    test_pos_e1 = [test_data[index]['pos_e1'].strip() for index in test_data]
+    test_pos_e2 = [test_data[index]['pos_e2'].strip() for index in test_data]
+
+    max_sentence_length = 90
+    create_relative_position_vocabulary(train_pos_e1, train_pos_e2, test_pos_e1, 
+        test_pos_e2, max_sentence_length, relative_position_to_index_path)

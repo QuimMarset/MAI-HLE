@@ -1,5 +1,4 @@
 import numpy as np
-from corenlp.deptree import DependencyTree
 from utils.embedding_utils import create_vectorizer, map_to_indices
 
 

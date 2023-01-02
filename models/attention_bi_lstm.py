@@ -1,8 +1,6 @@
 from keras.layers import Layer, Bidirectional, LSTM, Dense, Dropout, Embedding
 from keras.initializers.initializers_v2 import Constant
 from keras import Input, Model
-from keras.regularizers import L2
-from keras.metrics import categorical_crossentropy
 import tensorflow as tf
 from models.basic_model import BasicModel
 
@@ -30,10 +28,9 @@ class Attention(Layer):
 class AttentionBiLSTM(BasicModel):
 
 
-    def __init__(self, num_classes, word_embed_matrix, config):
-        super().__init__(num_classes, config.seed)
+    def __init__(self, num_classes, word_embed_matrix, config, optimizer, scorer, logger):
+        super().__init__(num_classes, config, optimizer, scorer, logger)
         self.create_model(word_embed_matrix, config)
-        self.l2_coef = config.l2_coef
 
 
     def create_model(self, word_embed_matrix, config):
@@ -63,25 +60,3 @@ class AttentionBiLSTM(BasicModel):
         output = Dense(self.num_classes, activation='softmax')(attention_dropout)
 
         self.model = Model(input, output)
-
-
-    def compile(self, optimizer, label_smoothing):
-
-        def smooth_labels(labels):
-            labels *= (1 - label_smoothing)
-            labels += (label_smoothing / labels.shape[1])
-            return labels
-
-        def custom_loss(y_true, y_pred):
-            y_true = smooth_labels(y_true)
-            loss = categorical_crossentropy(y_true, y_pred)
-            l2_loss = self.l2_coef * tf.add_n(
-                [
-                    tf.nn.l2_loss(weight) 
-                    for weight in self.model.trainable_variables 
-                    if 'bias' not in weight.name.lower()
-                ]
-            )
-            return loss + l2_loss
-
-        self.model.compile(optimizer, run_eagerly=True, loss=custom_loss, metrics=["accuracy"])
