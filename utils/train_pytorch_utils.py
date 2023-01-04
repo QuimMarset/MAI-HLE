@@ -38,12 +38,15 @@ def train(config, model, optimizer, logger, scorer, train_loader, test_loader, s
             train_loss += batch_loss.item()
             batch_loss.backward()
 
-            nn.utils.clip_grad_norm_(
-                model.parameters(),
-                max_norm=config.gradient_clip
-            )
+            if config.gradient_clip > 0:
+                if config.clip_norm:
+                    nn.utils.clip_grad_norm_(model.parameters(), config.gradient_clip)
+                else:
+                    nn.utils.clip_grad_value_(model.parameters(), config.gradient_clip)
+
             optimizer.step()
-            lr_scheduler.step()
+            if lr_scheduler:
+                lr_scheduler.step()
 
         train_loss = train_loss / len(train_loader)
         logger.logging_train(epoch, train_loss, 0)
@@ -55,6 +58,7 @@ def train(config, model, optimizer, logger, scorer, train_loader, test_loader, s
             max_f1_score = f1_score
             model.save_model(save_path)
             save_predictions(test_predictions, save_path)
+            logger.log_text('SAVED MODEL!')
 
 
 
@@ -66,7 +70,7 @@ def test(model, scorer, test_loader):
     with torch.no_grad():
 
         model.eval()
-        data_iterator = tqdm(test_loader)
+        data_iterator = tqdm(test_loader, desc='Test')
         
         for _, (batch_data, batch_labels) in enumerate(data_iterator):
 
@@ -86,3 +90,5 @@ def test(model, scorer, test_loader):
     f1_score = scorer.compute_f1_score(predictions, true_labels)
 
     return test_loss, predictions, f1_score
+
+

@@ -1,0 +1,24 @@
+
+
+seed: 1234
+
+learning_rate: 0.001
+l2_decay: 0.00001
+
+max_length: 100
+max_distance: 50
+
+word_dim: 50
+pos_dim: 5
+
+batch_size: 128
+
+num_filters: 200
+dense_units: 100
+
+dropout: 0.5
+
+epochs: 20
+
+# No clipping
+gradient_clip: 0

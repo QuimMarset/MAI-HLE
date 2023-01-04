@@ -5,8 +5,7 @@ sys.path.append('./')
 from utils.file_io_utils import read_data_file
 from utils.label_dicts import class2label
 from utils.file_io_utils import write_dict_to_json, save_array_to_npy_file
-from utils.constants_paths import (raw_train_data_path, raw_test_data_path, 
-    train_data_2_path, test_data_2_path, train_labels_2_path, test_labels_2_path)
+from utils.constants_paths import *
 
 
 
@@ -115,13 +114,13 @@ def preprocess_data(file_path, max_sentence_length):
 
 
 if __name__ == "__main__":
-    max_sentence_length = 90
+    max_sentence_length = 100
 
     train_data, train_labels = preprocess_data(raw_train_data_path, max_sentence_length)
     test_data, test_labels = preprocess_data(raw_test_data_path, max_sentence_length)
 
-    write_dict_to_json(train_data, train_data_2_path)
-    save_array_to_npy_file(train_labels, train_labels_2_path)
+    write_dict_to_json(train_data, train_data_path)
+    save_array_to_npy_file(train_labels, train_labels_path)
 
-    write_dict_to_json(test_data, test_data_2_path)
-    save_array_to_npy_file(test_labels, test_labels_2_path)
+    write_dict_to_json(test_data, test_data_path)
+    save_array_to_npy_file(test_labels, test_labels_path)

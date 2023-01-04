@@ -33,7 +33,8 @@ test_labels_path = join_path(processed_data_path, 'test_labels.npy')
 # =====================
 
 vocabularies_path = join_path(data_path, 'vocabularies')
-words_vocabulary_path = join_path(vocabularies_path, 'words_vocabulary')
+words_vocabulary_path = join_path(vocabularies_path, 'words_vocabulary.npy')
+relative_positions_vocabulary_path = join_path(vocabularies_path, 'relative_positions.npy')
 
 # =====================
 # Word embeddings
@@ -52,6 +53,8 @@ senna_path = join_path(embeddings_path, 'senna')
 senna_words_path = join_path(senna_path, 'senna_words.lst')
 senna_vectors_path = join_path(senna_path, 'embed50.senna.npy')
 
+tacred_50_path = join_path(embeddings_path, 'tacred_50.txt.')
+
 embedding_matrices_path = join_path(embeddings_path, 'matrices')
 glove_50_matrix_path = join_path(embedding_matrices_path, 'embedding_matrix_glove_50.npy')
 glove_100_matrix_path = join_path(embedding_matrices_path, 'embedding_matrix_glove_100.npy')
@@ -69,13 +72,10 @@ glove_matrices = [glove_50_matrix_path, glove_100_matrix_path, glove_200_matrix_
 
 configs_path = 'config_files'
 
-cnn_config_path = join_path(configs_path, 'cnn_config.yaml')
-cnn_rnn_config_path = join_path(configs_path, 'cnn_rnn_config.yaml')
-drnn_config_path = join_path(configs_path, 'drnn_config.yaml')
-attention_bi_lstm_config_path = join_path(configs_path, 'config_attention_bi_lstm.yaml')
-entity_attention_lstm_config_path = join_path(configs_path, 'entity_attention_lstm_config.yaml')
-
+entity_attention_config_path = join_path(configs_path, 'entity_attention_config.yaml')
 rbert_config_path = join_path(configs_path, 'RBERT_config.yaml')
+attention_lstm_config_path = join_path(configs_path, 'attention_lstm_config.yaml')
+cnn_config_path = join_path(configs_path, 'cnn_config.yaml')
 
 
 # =====================

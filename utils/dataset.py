@@ -24,7 +24,7 @@ def create_data_loader(data, labels, batch_size, shuffle):
         dataset=dataset,
         batch_size=batch_size,
         shuffle=shuffle,
-        num_workers=2,
+        num_workers=4,
     )
     return data_loader
 

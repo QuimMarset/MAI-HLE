@@ -19,3 +19,4 @@ warmup_proportion: 0.1
 dropout: 0.1
 
 gradient_clip: 1
+clip_norm: True

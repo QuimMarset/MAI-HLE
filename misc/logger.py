@@ -47,6 +47,12 @@ class Logger:
         print(f1_log)
 
 
+
+    def log_text(self, text):
+        self.log_file.write(text + '\n')
+        print(text)
+
+
     def close(self):
         self.log_file.flush()
         self.log_file.close()

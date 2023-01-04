@@ -1,0 +1,26 @@
+
+seed: 1234
+
+max_length: 90
+
+word_dim: 300
+hidden_dim: 300
+pos_dim: 50
+attention_dim: 50
+
+num_latents: 3
+
+embed_dropout: 0.7
+lstm_dropout: 0.7
+linear_dropout: 0.5
+
+num_heads: 4
+
+epochs: 100
+batch_size: 20
+
+learning_rate: 1
+l2_decay: 0.00001
+
+gradient_clip: 1
+clip_norm: False
