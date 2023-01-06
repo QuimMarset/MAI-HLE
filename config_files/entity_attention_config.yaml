@@ -3,6 +3,8 @@ seed: 1234
 
 max_length: 90
 
+pre_trained_path: 'glove_300_2'
+
 word_dim: 300
 hidden_dim: 300
 pos_dim: 50

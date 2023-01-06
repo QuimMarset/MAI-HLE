@@ -2,12 +2,13 @@
 
 seed: 1234
 
+pre_trained_path: 'glove_100'
+
 embed_dim: 100
 hidden_dim: 100
 num_layers: 1
 
 max_length: 100
-lstm_units: 100
 
 embed_dropout: 0.3
 lstm_dropout: 0.3

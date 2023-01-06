@@ -4,6 +4,7 @@ from features_extractors.entity_attention_features import EntityAttentionFeature
 from utils.constants_paths import entity_attention_config_path
 from utils.file_io_utils import read_yaml_config
 from utils.train_pytorch_utils import train
+from utils.pre_trained_embed_utils import get_pre_trained_path
 from utils.dataset import create_train_data_loader, create_test_data_loader
 
 
@@ -12,9 +13,9 @@ from utils.dataset import create_train_data_loader, create_test_data_loader
 class TrainerEntityAttention:
 
 
-    def __init__(self, num_classes, pre_trained_path):
+    def __init__(self, num_classes):
         self.__init_config()
-        self.__create_feature_extractor(pre_trained_path)
+        self.__create_feature_extractor()
         self.__create_model(num_classes)
         self.__create_optimizer()
 
@@ -23,9 +24,10 @@ class TrainerEntityAttention:
         self.config = read_yaml_config(entity_attention_config_path)
 
 
-    def __create_feature_extractor(self, pre_trained_path):
+    def __create_feature_extractor(self):
         max_length = self.config.max_length
         word_dim = self.config.word_dim
+        pre_trained_path = get_pre_trained_path(self.config.pre_trained_path)
         self.feature_extractor = EntityAttentionFeatureExtractor(pre_trained_path, 
             word_dim, max_length)
 

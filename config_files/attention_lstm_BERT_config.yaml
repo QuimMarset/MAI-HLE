@@ -1,0 +1,27 @@
+
+
+seed: 42
+
+epochs: 5
+
+max_length: 128
+
+batch_size: 16
+
+hidden_dim: 100
+num_layers: 1
+
+learning_rate: 0.00002
+learning_rate_BERT: 0.00002
+
+weight_decay: 0
+
+gradient_accumulation_steps: 1
+warmup_proportion: 0.1
+
+embed_dropout: 0.1
+lstm_dropout: 0.3
+linear_dropout: 0.5
+
+gradient_clip: 1
+clip_norm: True

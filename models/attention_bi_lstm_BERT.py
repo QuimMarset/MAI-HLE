@@ -3,7 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-from transformers import WEIGHTS_NAME
+from transformers import BertConfig
+from transformers import BertModel
+from transformers import WEIGHTS_NAME, CONFIG_NAME
+from utils.constants_paths import bert_path
 from utils.path_utils import join_path
 
 device = torch.device('cpu')
@@ -11,22 +14,21 @@ if torch.cuda.is_available():
     device = torch.device('cuda')
 
 
-class AttentionBiLSTM(nn.Module):
+class AttentionBiLSTMBERT(nn.Module):
 
-    def __init__(self, num_classes, embedding_matrix, config):
+    def __init__(self, num_classes, config):
         super().__init__()
         self.num_classes = num_classes
-        self.embedding_matrix = torch.from_numpy(embedding_matrix)
         self.config = config
+        
+        self.bert = BertModel.from_pretrained(bert_path)
+        bert_config = BertConfig.from_pretrained(bert_path)
 
         self.max_length = config.max_length
-        self.word_dim = config.embed_dim
+        self.word_dim = bert_config.hidden_size
         self.hidden_dim = config.hidden_dim
 
-        self.word_embedding = nn.Embedding.from_pretrained(
-            embeddings=self.embedding_matrix, freeze=False)
-
-        self.lstm = nn.LSTM(self.word_dim, config.hidden_dim, config.num_layers, 
+        self.lstm = nn.LSTM(self.word_dim, self.hidden_dim, config.num_layers, 
             batch_first=True, bidirectional=True)
 
         self.tanh = nn.Tanh()
@@ -46,7 +48,16 @@ class AttentionBiLSTM(nn.Module):
         init.constant_(self.dense_output.bias, 0.)
 
 
-    def lstm_layer(self, embeddings, mask):
+    def __bert_layer(self, input_ids, attention_mask, token_type_ids):
+        outputs = self.bert(input_ids=input_ids, 
+            attention_mask=attention_mask, token_type_ids=token_type_ids)
+
+        sequence_hidden_states = outputs[0] # B*L*H
+        #cls_hidden_state = outputs[1] # B*H
+        return sequence_hidden_states
+
+
+    def __lstm_layer(self, embeddings, mask):
         non_padded_lengths = torch.sum(mask.gt(0), dim=-1).to(torch.device('cpu'))
         # Optimize computations removing padding
         embeddings = pack_padded_sequence(embeddings, non_padded_lengths, batch_first=True, enforce_sorted=False)
@@ -61,7 +72,7 @@ class AttentionBiLSTM(nn.Module):
         return hidden_states
 
 
-    def attention_layer(self, H, mask):
+    def __attention_layer(self, H, mask):
         # B*L*H
         M = self.tanh(H)
         # B*H*1
@@ -87,16 +98,21 @@ class AttentionBiLSTM(nn.Module):
         # B*L
         mask = data[:, 1, :].view(-1, self.max_length)
 
+        # Boolean mask separating the padded tokens        
+        attention_mask = mask.gt(0).float()
+        # Boolean mask separating the 2 sentences tokens (not the case here)
+        token_type_ids = mask.gt(-1).long()
+
         # B*L*word_dim
-        embeddings = self.word_embedding(word_indices)  
-        embeddings = self.embed_dropout(embeddings)
+        sequence_hidden_states = self.__bert_layer(word_indices, attention_mask, token_type_ids)
+        embeddings = self.embed_dropout(sequence_hidden_states)
         
         # B*L*hidden_dim
-        hidden_states = self.lstm_layer(embeddings, mask)  
+        hidden_states = self.__lstm_layer(embeddings, mask)  
         hidden_states = self.lstm_dropout(hidden_states)
 
         # B*hidden_dim
-        sentence_representation = self.attention_layer(hidden_states, mask)
+        sentence_representation = self.__attention_layer(hidden_states, mask)
         sentence_representation = self.linear_dropout(sentence_representation)
 
         logits = self.dense_output(sentence_representation)

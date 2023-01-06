@@ -14,106 +14,89 @@ class CNN(nn.Module):
     def __init__(self, num_classes, config, word_embedding_matrix):
         super().__init__()
         
-        self.class_num = num_classes
-        self.word_vec = torch.from_numpy(word_embedding_matrix)
-        self.max_len = config.max_length
-        self.word_dim = config.word_dim
-        self.pos_dim = config.pos_dim
-        self.pos_dis = config.max_distance
+        self.num_classes = num_classes
+        self.word_embed_matrix = torch.from_numpy(word_embedding_matrix)
+        self.max_length = config.max_length
+        self.num_filters = config.num_filters
 
-        self.dropout_value = config.dropout
-        self.filter_num = config.num_filters
-        self.window = 3
-        self.hidden_size = config.dense_units
+        self.word_embedding = nn.Embedding.from_pretrained(self.word_embed_matrix, freeze=False)
+        # The layer needs an extra position
+        num_positions = 2 * config.max_distance + 3
+        self.pos1_embedding = nn.Embedding(num_embeddings=num_positions, embedding_dim=config.pos_dim)
+        self.pos2_embedding = nn.Embedding(num_embeddings=num_positions, embedding_dim=config.pos_dim)
 
-        self.dim = self.word_dim + 2 * self.pos_dim
+        num_channels = config.word_dim + 2 * config.pos_dim
+        self.conv = nn.Conv2d(1, self.num_filters, (3, num_channels), stride=(1, 1), padding=(1, 0))
+        self.maxpool = nn.MaxPool2d((self.max_length, 1))
 
-        # net structures and operations
-        self.word_embedding = nn.Embedding.from_pretrained(
-            embeddings=self.word_vec,
-            freeze=False,
-        )
-        self.pos1_embedding = nn.Embedding(
-            num_embeddings=2 * self.pos_dis + 3,
-            embedding_dim=self.pos_dim
-        )
-        self.pos2_embedding = nn.Embedding(
-            num_embeddings=2 * self.pos_dis + 3,
-            embedding_dim=self.pos_dim
-        )
-
-        self.conv = nn.Conv2d(
-            in_channels=1,
-            out_channels=self.filter_num,
-            kernel_size=(self.window, self.dim),
-            stride=(1, 1),
-            bias=True,
-            padding=(1, 0),  # same padding
-            padding_mode='zeros'
-        )
-        self.maxpool = nn.MaxPool2d((self.max_len, 1))
         self.tanh = nn.Tanh()
-        self.dropout = nn.Dropout(self.dropout_value)
-        self.linear = nn.Linear(
-            in_features=self.filter_num,
-            out_features=self.hidden_size,
-            bias=True
-        )
-        self.dense = nn.Linear(
-            in_features=self.hidden_size,
-            out_features=self.class_num,
-            bias=True
-        )
+        self.dropout = nn.Dropout(config.dropout)
+        
+        self.dense = nn.Linear(self.num_filters, config.dense_units)
+        self.output = nn.Linear(config.dense_units, self.num_classes)
 
         self.loss = nn.CrossEntropyLoss()
+        self.__initialize_weights()
 
-        # initialize weight
+
+    def __initialize_weights(self):
         init.xavier_normal_(self.pos1_embedding.weight)
         init.xavier_normal_(self.pos2_embedding.weight)
+
         init.xavier_normal_(self.conv.weight)
         init.constant_(self.conv.bias, 0.)
-        init.xavier_normal_(self.linear.weight)
-        init.constant_(self.linear.bias, 0.)
+
         init.xavier_normal_(self.dense.weight)
         init.constant_(self.dense.bias, 0.)
 
-    def encoder_layer(self, token, pos1, pos2):
-        word_emb = self.word_embedding(token)  # B*L*word_dim
-        pos1_emb = self.pos1_embedding(pos1)  # B*L*pos_dim
-        pos2_emb = self.pos2_embedding(pos2)  # B*L*pos_dim
-        emb = torch.cat(tensors=[word_emb, pos1_emb, pos2_emb], dim=-1)
-        return emb  # B*L*D, D=word_dim+2*pos_dim
+        init.xavier_normal_(self.output.weight)
+        init.constant_(self.output.bias, 0.)
 
-    def conv_layer(self, emb, mask):
-        emb = emb.unsqueeze(dim=1)  # B*1*L*D
-        conv = self.conv(emb)  # B*C*L*1
 
-        # mask, remove the effect of 'PAD'
-        conv = conv.view(-1, self.filter_num, self.max_len)  # B*C*L
+    def __encode(self, word_indices, pos1, pos2):
+        word_embed = self.word_embedding(word_indices)  # B*L*word_dim
+        pos1_embed = self.pos1_embedding(pos1)  # B*L*pos_dim
+        pos2_embed = self.pos2_embedding(pos2)  # B*L*pos_dim
+        embed = torch.cat(tensors=[word_embed, pos1_embed, pos2_embed], dim=-1)
+        return embed  # B*L*(word_dim + 2*pos_dim)
+
+
+    def __convolution(self, embed, mask):
+        embed = embed.unsqueeze(dim=1)  # B*1*L*D
+        conv_output = self.conv(embed)  # B*C*L*1
+
+        # Use the mask to remove the padded entries before computing the max_pooling
+        conv_output = conv_output.view(-1, self.num_filters, self.max_length)  # B*C*L
         mask = mask.unsqueeze(dim=1)  # B*1*L
-        mask = mask.expand(-1, self.filter_num, -1)  # B*C*L
-        conv = conv.masked_fill_(mask.eq(0), float('-inf'))  # B*C*L
-        conv = conv.unsqueeze(dim=-1)  # B*C*L*1
-        return conv
+        mask = mask.expand(-1, self.num_filters, -1)  # B*C*L
+        conv_output = conv_output.masked_fill_(mask.eq(0), float('-inf'))  # B*C*L
+        conv_output = conv_output.unsqueeze(dim=-1)  # B*C*L*1
+        return conv_output
 
-    def single_maxpool_layer(self, conv):
-        pool = self.maxpool(conv)  # B*C*1*1
-        pool = pool.view(-1, self.filter_num)  # B*C
-        return pool
+
+    def __max_pooling(self, conv_output):
+        max_pool_output = self.maxpool(conv_output)  # B*C*1*1
+        max_pool_output = max_pool_output.view(-1, self.num_filters)  # B*C
+        return max_pool_output
+
 
     def forward(self, data, labels):
-        token = data[:, 0, :].view(-1, self.max_len)
-        pos1 = data[:, 1, :].view(-1, self.max_len)
-        pos2 = data[:, 2, :].view(-1, self.max_len)
-        mask = data[:, 3, :].view(-1, self.max_len)
-        emb = self.encoder_layer(token, pos1, pos2)
-        emb = self.dropout(emb)
-        conv = self.conv_layer(emb, mask)
-        pool = self.single_maxpool_layer(conv)
-        sentence_feature = self.linear(pool)
-        sentence_feature = self.tanh(sentence_feature)
-        sentence_feature = self.dropout(sentence_feature)
-        logits = self.dense(sentence_feature)
+        word_indices = data[:, 0, :].view(-1, self.max_length)
+        pos1 = data[:, 1, :].view(-1, self.max_length)
+        pos2 = data[:, 2, :].view(-1, self.max_length)
+        mask = data[:, 3, :].view(-1, self.max_length)
+
+        embed = self.__encode(word_indices, pos1, pos2)
+        embed = self.dropout(embed)
+
+        conv_output = self.__convolution(embed, mask)
+        pool_output = self.__max_pooling(conv_output)
+        
+        sentence_features = self.dense(pool_output)
+        sentence_features = self.tanh(sentence_features)
+        sentence_features = self.dropout(sentence_features)
+        
+        logits = self.output(sentence_features)
         loss = self.loss(logits, labels.type(torch.LongTensor).to(device))
         return loss, logits
 

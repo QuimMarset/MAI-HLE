@@ -1,8 +1,8 @@
 from transformers import AdamW
 from transformers import get_linear_schedule_with_warmup
-from models.r_bert import RBERT
+from models.attention_bi_lstm_BERT import AttentionBiLSTMBERT
 from features_extractors.bert_embedding_features import BERTFeatureExtractor
-from utils.constants_paths import rbert_config_path, words_vocabulary_path
+from utils.constants_paths import attention_lstm_bert_config_path, words_vocabulary_path
 from utils.file_io_utils import read_yaml_config, load_npy_file_to_np_array
 from utils.train_pytorch_utils import train
 from utils.dataset import create_train_data_loader, create_test_data_loader
@@ -10,7 +10,7 @@ from utils.dataset import create_train_data_loader, create_test_data_loader
 
 
 
-class TrainerRBERT:
+class TrainerAttentionLSTMBERT:
 
 
     def __init__(self, num_classes):
@@ -21,11 +21,11 @@ class TrainerRBERT:
 
 
     def __init_config(self):
-        self.config = read_yaml_config(rbert_config_path)
+        self.config = read_yaml_config(attention_lstm_bert_config_path)
 
 
     def __create_model(self, num_classes):
-        self.model = RBERT(num_classes, self.config)
+        self.model = AttentionBiLSTMBERT(num_classes, self.config)
 
 
     def __create_optimizer(self):

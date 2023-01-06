@@ -3,7 +3,7 @@ from transformers import BertTokenizer
 from utils.constants_paths import bert_path
 
 
-class RBERTFeatureExtractor:
+class BERTFeatureExtractor:
 
     def __init__(self, max_length, words_vocabulary):
         self.max_length = max_length

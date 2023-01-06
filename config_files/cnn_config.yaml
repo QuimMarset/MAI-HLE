@@ -2,6 +2,8 @@
 
 seed: 1234
 
+pre_trained_path: 'tacred_50'
+
 learning_rate: 0.001
 l2_decay: 0.00001
 

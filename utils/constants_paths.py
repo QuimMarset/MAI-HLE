@@ -24,6 +24,10 @@ processed_data_path = join_path(data_path, 'processed_data')
 
 train_data_path = join_path(processed_data_path, 'processed_train_data.json')
 test_data_path = join_path(processed_data_path, 'processed_test_data.json')
+
+train_data_cnn_path = join_path(processed_data_path, 'processed_train_data_cnn.json')
+test_data_cnn_path = join_path(processed_data_path, 'processed_test_data_cnn.json')
+
 train_labels_path = join_path(processed_data_path, 'train_labels.npy')
 test_labels_path = join_path(processed_data_path, 'test_labels.npy')
 
@@ -53,18 +57,12 @@ senna_path = join_path(embeddings_path, 'senna')
 senna_words_path = join_path(senna_path, 'senna_words.lst')
 senna_vectors_path = join_path(senna_path, 'embed50.senna.npy')
 
-tacred_50_path = join_path(embeddings_path, 'tacred_50.txt.')
+tacred_50_path = join_path(embeddings_path, 'tacred_50.txt')
 
-embedding_matrices_path = join_path(embeddings_path, 'matrices')
-glove_50_matrix_path = join_path(embedding_matrices_path, 'embedding_matrix_glove_50.npy')
-glove_100_matrix_path = join_path(embedding_matrices_path, 'embedding_matrix_glove_100.npy')
-glove_200_matrix_path = join_path(embedding_matrices_path, 'embedding_matrix_glove_200.npy')
-glove_300_matrix_path = join_path(embedding_matrices_path, 'embedding_matrix_glove_300.npy')
-glove_300_2_matrix_path = join_path(embedding_matrices_path, 'embedding_matrix_glove_300_2.npy')
-senna_50_matrix_path = join_path(embedding_matrices_path, 'embedding_matrix_senna_50.npy')
+google_300_path = join_path(embeddings_path, 'google_300.npy')
 
-glove_embeddings = [glove_50_path, glove_100_path, glove_200_path, glove_300_path, glove_300_2_path]
-glove_matrices = [glove_50_matrix_path, glove_100_matrix_path, glove_200_matrix_path, glove_300_matrix_path, glove_300_2_matrix_path]
+
+
 
 # =====================
 # Config files
@@ -76,6 +74,7 @@ entity_attention_config_path = join_path(configs_path, 'entity_attention_config.
 rbert_config_path = join_path(configs_path, 'RBERT_config.yaml')
 attention_lstm_config_path = join_path(configs_path, 'attention_lstm_config.yaml')
 cnn_config_path = join_path(configs_path, 'cnn_config.yaml')
+attention_lstm_bert_config_path = join_path(configs_path, 'attention_lstm_BERT_config.yaml')
 
 
 # =====================

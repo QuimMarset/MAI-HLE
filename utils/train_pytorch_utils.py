@@ -4,6 +4,7 @@ from torch import nn
 from utils.label_dicts import label2class
 from utils.path_utils import join_path
 
+
 device = torch.device('cpu')
 if torch.cuda.is_available():
     device = torch.device('cuda')
@@ -61,7 +62,6 @@ def train(config, model, optimizer, logger, scorer, train_loader, test_loader, s
             logger.log_text('SAVED MODEL!')
 
 
-
 def test(model, scorer, test_loader):
     test_loss = 0
     predictions = []
@@ -90,5 +90,3 @@ def test(model, scorer, test_loader):
     f1_score = scorer.compute_f1_score(predictions, true_labels)
 
     return test_loss, predictions, f1_score
-
-
