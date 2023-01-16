@@ -31,7 +31,6 @@ test_data_cnn_path = join_path(processed_data_path, 'processed_test_data_cnn.jso
 train_labels_path = join_path(processed_data_path, 'train_labels.npy')
 test_labels_path = join_path(processed_data_path, 'test_labels.npy')
 
-
 # =====================
 # Vocabularies
 # =====================
@@ -58,11 +57,7 @@ senna_words_path = join_path(senna_path, 'senna_words.lst')
 senna_vectors_path = join_path(senna_path, 'embed50.senna.npy')
 
 tacred_50_path = join_path(embeddings_path, 'tacred_50.txt')
-
 google_300_path = join_path(embeddings_path, 'google_300.npy')
-
-
-
 
 # =====================
 # Config files
@@ -75,7 +70,7 @@ rbert_config_path = join_path(configs_path, 'RBERT_config.yaml')
 attention_lstm_config_path = join_path(configs_path, 'attention_lstm_config.yaml')
 cnn_config_path = join_path(configs_path, 'cnn_config.yaml')
 attention_lstm_bert_config_path = join_path(configs_path, 'attention_lstm_BERT_config.yaml')
-
+entity_attention_bert_config_path = join_path(configs_path, 'entity_attention_BERT_config.yaml')
 
 # =====================
 # Experiment results
@@ -83,3 +78,21 @@ attention_lstm_bert_config_path = join_path(configs_path, 'attention_lstm_BERT_c
 
 experiments_path = 'experiments'
 
+# =====================
+# Final predictions
+# =====================
+
+predictions_path = 'best_predictions'
+
+predictions_cnn = join_path(predictions_path, 'best_predictions_cnn.txt')
+predictions_att_lstm = join_path(predictions_path, 'best_predictions_attention_lstm.txt')
+predictions_entity_att = join_path(predictions_path, 'best_predictions_entity_attention.txt')
+predictions_rbert = join_path(predictions_path, 'best_predictions_rbert.txt')
+predictions_att_lstm_bert = join_path(predictions_path, 'best_predictions_attention_lstm_bert.txt')
+predictions_entity_att_bert = join_path(predictions_path, 'best_predictions_entity_attention_bert.txt')
+
+# =====================
+# Evaluation
+# =====================
+
+evaluation_path = join_path(data_path, 'evaluation')

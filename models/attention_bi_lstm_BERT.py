@@ -122,3 +122,4 @@ class AttentionBiLSTMBERT(nn.Module):
 
     def save_model(self, save_path):
         torch.save(self.state_dict(), join_path(save_path, WEIGHTS_NAME))
+        self.bert.config.to_json_file(join_path(save_path, CONFIG_NAME))

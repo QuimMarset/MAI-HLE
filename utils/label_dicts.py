@@ -43,5 +43,42 @@ label2class = {
     15: 'Member-Collection(e1,e2)',
     16: 'Member-Collection(e2,e1)',
     17: 'Content-Container(e1,e2)',
-    18: 'Content-Container(e2,e1)'    
+    18: 'Content-Container(e2,e1)'
 }
+
+
+label2class_no_direction = {
+    0: 'Other',
+    1: 'Message-Topic',
+    2: 'Message-Topic',
+    3: 'Product-Producer',
+    4: 'Product-Producer',
+    5: 'Instrument-Agency',
+    6: 'Instrument-Agency',
+    7: 'Entity-Destination',
+    8: 'Entity-Destination',
+    9: 'Cause-Effect',
+    10: 'Cause-Effect',
+    11: 'Component-Whole',
+    12: 'Component-Whole',
+    13: 'Entity-Origin',
+    14: 'Entity-Origin',
+    15: 'Member-Collection',
+    16: 'Member-Collection',
+    17: 'Content-Container',
+    18: 'Content-Container'
+}
+
+
+class_names_no_direction = [
+    'Other',
+    'Message-Topic',
+    'Product-Producer',
+    'Instrument-Agency',
+    'Entity-Destination',
+    'Cause-Effect',
+    'Component-Whole',
+    'Entity-Origin',
+    'Member-Collection',
+    'Content-Container'
+]

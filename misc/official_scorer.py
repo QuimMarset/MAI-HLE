@@ -49,7 +49,7 @@ class OfficialF1Scorer:
         rows_sum = np.sum(confusion_matrix, axis=1).reshape(-1)
         f1_scores = np.zeros(shape=[num_classes], dtype=np.float32)
 
-        for i in range(0, num_classes):  # ignore the 'Other'
+        for i in range(0, num_classes): # Considering 'Other'
             try:
                 precision = float(confusion_matrix[i][i]) / float(cols_sum[i] + match_no_direction[i])
                 recall = float(confusion_matrix[i][i]) / float(rows_sum[i] + match_no_direction[i])
@@ -65,7 +65,7 @@ class OfficialF1Scorer:
         num_found_classes = 0
         total_f1 = 0.0
         
-        for i in range(1, num_classes):
+        for i in range(1, num_classes): # Ignoring 'Other'
             # classes that not in the predicted labels are not considered
             if f1_scores[i] > 0.0:
                 num_found_classes += 1
@@ -77,7 +77,6 @@ class OfficialF1Scorer:
 
     
     def __compute_macro_f1_manual(self, predicted_labels, true_labels, num_classes=10):
-        assert true_labels.shape[0] == predicted_labels.shape[0]
         confusion_matrix, match_no_direction = \
             self.__compute_confusion_matrix(predicted_labels, true_labels, num_classes)
         f1_scores = self.__compute_f1_scores(confusion_matrix, match_no_direction)

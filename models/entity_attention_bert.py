@@ -3,7 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import init
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-from transformers import WEIGHTS_NAME
+from transformers import BertConfig
+from transformers import BertModel
+from transformers import WEIGHTS_NAME, CONFIG_NAME
+from utils.constants_paths import bert_path
 from utils.path_utils import join_path
 
 device = torch.device('cpu')
@@ -11,28 +14,28 @@ if torch.cuda.is_available():
     device = torch.device('cuda')
 
 
-class EntityAttention(nn.Module):
+class EntityAttentionBERT(nn.Module):
 
-    def __init__(self, num_classes, word_embedding_matrix, num_positions, config):
+    def __init__(self, num_classes, num_positions, config):
         super().__init__()
         self.num_classes = num_classes
-        self.word_embedding_matrix = torch.from_numpy(word_embedding_matrix)
         self.config = config
 
         self.batch_size = config.batch_size
         self.max_length = config.max_length
-        self.word_dim = config.word_dim
         self.hidden_dim = config.hidden_dim
 
-        self.word_embedding = nn.Embedding.from_pretrained(self.word_embedding_matrix, freeze=False)
+        bert_config = BertConfig.from_pretrained(bert_path)
+        self.bert = BertModel.from_pretrained(bert_path)
+        self.word_dim = bert_config.hidden_size
 
         self.pos1_embed = nn.Embedding(num_positions+1, config.pos_dim)
         self.pos2_embed = nn.Embedding(num_positions+1, config.pos_dim)
 
-        self.mhsa = nn.MultiheadAttention(config.word_dim, config.num_heads, batch_first=True)
-        self.layer_norm = nn.LayerNorm(config.word_dim)
+        self.mhsa = nn.MultiheadAttention(self.word_dim, config.num_heads, batch_first=True)
+        self.layer_norm = nn.LayerNorm(self.word_dim)
 
-        self.lstm = nn.LSTM(config.word_dim, config.hidden_dim, batch_first=True, bidirectional=True)
+        self.lstm = nn.LSTM(self.word_dim, config.hidden_dim, batch_first=True, bidirectional=True)
 
         self.latent_weights = nn.Parameter(torch.randn(config.num_latents, 2*config.hidden_dim))
         self.pos_dense = nn.Linear(2*config.hidden_dim + 2*config.pos_dim, config.attention_dim, bias=False)
@@ -57,8 +60,17 @@ class EntityAttention(nn.Module):
         init.xavier_normal_(self.pos1_embed.weight)
         init.xavier_normal_(self.pos2_embed.weight)
 
+    
+    def __bert_layer(self, input_ids, attention_mask, token_type_ids):
+        outputs = self.bert(input_ids=input_ids, 
+            attention_mask=attention_mask, token_type_ids=token_type_ids)
 
-    def multi_head_attention(self, embeddings, mask):
+        sequence_hidden_states = outputs[0] # B*L*H
+        #cls_hidden_state = outputs[1] # B*H
+        return sequence_hidden_states
+
+
+    def __multi_head_attention(self, embeddings, mask):
         key_attention_mask = mask.eq(0) # B*L
         # B*L*word_dim
         improved_embeddings, _ = self.mhsa(embeddings, embeddings, embeddings, key_attention_mask)
@@ -66,7 +78,7 @@ class EntityAttention(nn.Module):
         return improved_embeddings
 
 
-    def lstm_layer(self, embeddings, mask):
+    def __lstm_layer(self, embeddings, mask):
         non_padded_lengths = torch.sum(mask.gt(0), dim=-1).to(torch.device('cpu'))
         # Optimize computations removing padding
         embeddings = pack_padded_sequence(embeddings, non_padded_lengths, batch_first=True, enforce_sorted=False)
@@ -77,7 +89,7 @@ class EntityAttention(nn.Module):
         return hidden_states
 
 
-    def get_latent_type(self, entity_hidden):
+    def __get_latent_type(self, entity_hidden):
         # B*(2*H) * (2*H)*M -> B*M
         logits = torch.matmul(entity_hidden, self.latent_weights.transpose(1, 0))
         probs = F.softmax(logits, dim=-1) # B*M
@@ -86,19 +98,19 @@ class EntityAttention(nn.Module):
         return latent_type
 
 
-    def get_entity_last_hidden_state(self, hidden_states, end_index):
+    def __get_entity_last_hidden_state(self, hidden_states, end_index):
         end_index = end_index.type(torch.LongTensor)
         temp = torch.arange(hidden_states.size(0))
         return hidden_states[temp, end_index]
 
 
-    def entity_attention_layer(self, hidden_states, rel_pos_e1_embed, rel_pos_e2_embed, e1_end, e2_end, mask):
+    def __entity_attention_layer(self, hidden_states, rel_pos_e1_embed, rel_pos_e2_embed, e1_end, e2_end, mask):
         # B*(2*H)
-        e1_hidden = self.get_entity_last_hidden_state(hidden_states, e1_end)
-        e2_hidden = self.get_entity_last_hidden_state(hidden_states, e2_end)
+        e1_hidden = self.__get_entity_last_hidden_state(hidden_states, e1_end)
+        e2_hidden = self.__get_entity_last_hidden_state(hidden_states, e2_end)
         # B*(2*H)
-        e1_type = self.get_latent_type(e1_hidden)
-        e2_type = self.get_latent_type(e2_hidden)
+        e1_type = self.__get_latent_type(e1_hidden)
+        e2_type = self.__get_latent_type(e2_hidden)
         # B*(8*H)
         entity_features = torch.cat([e1_hidden, e1_type,e2_hidden, e2_type], dim=-1)
 
@@ -136,23 +148,28 @@ class EntityAttention(nn.Module):
         e2_end = data[:, 3, 1]
         mask = data[:, 4, :].view(-1, self.max_length)
 
+        # Boolean mask separating the padded tokens        
+        attention_mask = mask.gt(0).float()
+        # Boolean mask separating the 2 sentences tokens (not the case here)
+        token_type_ids = mask.gt(-1).long()
+
         # B*L*word_dim
-        word_embed = self.word_embedding(word_indices)  
-        word_embed = self.embed_dropout(word_embed)
+        sequence_hidden_states = self.__bert_layer(word_indices, attention_mask, token_type_ids)
+        word_embed = self.embed_dropout(sequence_hidden_states)
 
         # B*L*pos_dim
         pos_e1_embed = self.pos1_embed(pos_e1)
         pos_e2_embed = self.pos2_embed(pos_e2)
         
         # B*L*word_dim
-        improved_word_embed = self.multi_head_attention(word_embed, mask)
+        #improved_word_embed = self.__multi_head_attention(word_embed, mask)
         
         # B*L*(2*H)
-        hidden_states = self.lstm_layer(improved_word_embed, mask)
+        hidden_states = self.__lstm_layer(word_embed, mask)
         hidden_states = self.lstm_dropout(hidden_states)
 
         # B*hidden_dim
-        sentence_representation = self.entity_attention_layer(hidden_states, pos_e1_embed, pos_e2_embed, 
+        sentence_representation = self.__entity_attention_layer(hidden_states, pos_e1_embed, pos_e2_embed, 
             e1_end, e2_end, mask)
         sentence_representation = self.linear_dropout(sentence_representation)
 
@@ -163,3 +180,4 @@ class EntityAttention(nn.Module):
 
     def save_model(self, save_path):
         torch.save(self.state_dict(), join_path(save_path, WEIGHTS_NAME))
+        self.bert.config.to_json_file(join_path(save_path, CONFIG_NAME))

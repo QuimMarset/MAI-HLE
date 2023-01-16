@@ -18,3 +18,6 @@ perl scorer.pl $PREDICTIONSDIR/best_predictions_RBERT.txt $GROUNDTRUTH > $SAVEDI
 
 
 perl scorer.pl $PREDICTIONSDIR/best_predictions_attention_lstm_bert.txt $GROUNDTRUTH > $SAVEDIR/metrics_attention_lstm_bert.txt
+
+
+perl scorer.pl $PREDICTIONSDIR/best_predictions_entity_attention_bert.txt $GROUNDTRUTH > $SAVEDIR/metrics_entity_attention_bert.txt
