@@ -1,6 +1,8 @@
 # MAI-HLE
 
-Final Project - Relation Extraction
+## Master in Artificial Intelligence - Human Language Engineering - UPC
+
+### Final Project - Relation Extraction
 
 This project implements several models to solve the SemEval-2010 Task 8.
 
